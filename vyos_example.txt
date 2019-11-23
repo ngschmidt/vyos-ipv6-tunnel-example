@@ -1,0 +1,123 @@
+interfaces {
+    ethernet eth0 {
+        address 10.6.200.10/24
+        hw-id 00:50:56:85:7c:4c
+        ipv6 {
+            address {
+                eui64 ffff:ffff:ffff:d200::/64
+            }
+            dup-addr-detect-transmits 1
+        }
+    }
+    ethernet eth1 {
+        address 10.6.201.10/24
+        hw-id 00:50:56:85:60:79
+        ipv6 {
+            address {
+                eui64 ffff:ffff:ffff:d201::/64
+            }
+            dup-addr-detect-transmits 1
+        }
+    }
+    loopback lo {
+    }
+    tunnel tun0 {
+        address ::2/64
+        description "HE.NET IPv6 Tunneling"
+        encapsulation sit
+        local-ip 10.6.200.10
+        multicast disable
+        remote-ip 255.255.255.255
+    }
+}
+protocols {
+    bgp 64903 {
+        maximum-paths {
+            ebgp 4
+        }
+        neighbor 10.6.200.1 {
+            address-family {
+                ipv4-unicast {
+                }
+            }
+            description bgp-rrc-l0
+            remote-as 64901
+        }
+        neighbor 10.6.201.1 {
+            address-family {
+                ipv4-unicast {
+                }
+            }
+            description bgp-rrc-l1
+            remote-as 64901
+        }
+        neighbor ffff:ffff:ffff:d200::1 {
+            address-family {
+                ipv6-unicast {
+                    default-originate {
+                    }
+                }
+            }
+            remote-as 64901
+        }
+        neighbor ffff:ffff:ffff:d201::1 {
+            address-family {
+                ipv6-unicast {
+                    default-originate {
+                    }
+                }
+            }
+            remote-as 64901
+        }
+        timers {
+            holdtime 180
+            keepalive 60
+        }
+    }
+    static {
+        interface-route6 ::0/0 {
+            next-hop-interface tun0 {
+            }
+        }
+    }
+}
+system {
+    config-management {
+        commit-revisions 100
+    }
+    console {
+        device ttyS0 {
+            speed 115200
+        }
+    }
+    domain-name lab.engyak.net
+    host-name v6
+    login {
+        user vyos {
+            authentication {
+                plaintext-password ""
+            }
+            level admin
+        }
+    }
+    name-server 10.7.255.255
+    ntp {
+        server 0.pool.ntp.org {
+        }
+        server 1.pool.ntp.org {
+        }
+        server 2.pool.ntp.org {
+        }
+    }
+    syslog {
+        global {
+            facility all {
+                level info
+            }
+            facility protocols {
+                level debug
+            }
+        }
+    }
+    time-zone US/Alaska
+}
